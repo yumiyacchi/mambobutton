@@ -25,6 +25,7 @@ class SoundManager(private val context: Context) {
     private val scope = CoroutineScope(Dispatchers.IO)
     private val soundPool: SoundPool
     private val soundIdMap = mutableMapOf<SoundType, Int>()
+    private val customSoundIdMap = mutableMapOf<String, Int>()
     private val activeStreams = mutableSetOf<Int>()
 
     private val _isReady = MutableStateFlow(false)
@@ -32,6 +33,9 @@ class SoundManager(private val context: Context) {
 
     private val _currentlyPlaying = MutableStateFlow<SoundType?>(null)
     val currentlyPlaying: StateFlow<SoundType?> = _currentlyPlaying.asStateFlow()
+
+    private val _currentlyPlayingId = MutableStateFlow<String?>(null)
+    val currentlyPlayingId: StateFlow<String?> = _currentlyPlayingId.asStateFlow()
 
     init {
         val audioAttributes = AudioAttributes.Builder()
@@ -46,7 +50,7 @@ class SoundManager(private val context: Context) {
 
         soundPool.setOnLoadCompleteListener { _, _, status ->
             if (status == 0) {
-                if (soundIdMap.size >= SoundType.values().size) {
+                if (soundIdMap.size >= SoundType.values().size - 1) { // exclude CUSTOM
                     _isReady.value = true
                 }
             }
@@ -61,14 +65,53 @@ class SoundManager(private val context: Context) {
         val soundDir = File(context.cacheDir, "sounds").apply { mkdirs() }
 
         SoundType.values().forEach { type ->
-            val soundFile = File(soundDir, "${type.name.lowercase()}.wav")
-            if (!soundFile.exists() || soundFile.length() == 0L) {
-                generateWavFile(type, soundFile)
+            if (type != SoundType.CUSTOM) {
+                val soundFile = File(soundDir, "${type.name.lowercase()}.wav")
+                if (!soundFile.exists() || soundFile.length() == 0L) {
+                    generateWavFile(type, soundFile)
+                }
+                val soundId = soundPool.load(soundFile.absolutePath, 1)
+                soundIdMap[type] = soundId
             }
-            val soundId = soundPool.load(soundFile.absolutePath, 1)
-            soundIdMap[type] = soundId
         }
         _isReady.value = true
+    }
+
+    fun loadCustomSound(id: String, filePath: String) {
+        if (customSoundIdMap.containsKey(id)) return
+        val file = File(filePath)
+        if (file.exists()) {
+            val soundId = soundPool.load(file.absolutePath, 1)
+            if (soundId != 0) {
+                customSoundIdMap[id] = soundId
+            }
+        }
+    }
+
+    fun unloadCustomSound(id: String) {
+        customSoundIdMap.remove(id)?.let { soundId ->
+            soundPool.unload(soundId)
+        }
+    }
+
+    fun play(sound: com.yumiyacchi.mambobutton.model.SoundItem, pitch: Float = 1.0f) {
+        val soundId = if (sound.isCustom) {
+            val path = sound.soundFilePath ?: return
+            if (!customSoundIdMap.containsKey(sound.id)) {
+                loadCustomSound(sound.id, path)
+            }
+            customSoundIdMap[sound.id]
+        } else {
+            soundIdMap[sound.type]
+        } ?: return
+
+        val clampedPitch = pitch.coerceIn(0.5f, 2.0f)
+        val streamId = soundPool.play(soundId, 1.0f, 1.0f, 1, 0, clampedPitch)
+        if (streamId != 0) {
+            activeStreams.add(streamId)
+            _currentlyPlaying.value = sound.type
+            _currentlyPlayingId.value = sound.id
+        }
     }
 
     fun play(type: SoundType, pitch: Float = 1.0f) {
@@ -78,6 +121,7 @@ class SoundManager(private val context: Context) {
         if (streamId != 0) {
             activeStreams.add(streamId)
             _currentlyPlaying.value = type
+            _currentlyPlayingId.value = type.name
         }
     }
 
@@ -87,6 +131,7 @@ class SoundManager(private val context: Context) {
         }
         activeStreams.clear()
         _currentlyPlaying.value = null
+        _currentlyPlayingId.value = null
     }
 
     fun release() {
@@ -107,6 +152,7 @@ class SoundManager(private val context: Context) {
             SoundType.VICTORY -> generateVictory(sampleRate)
             SoundType.DRUM_ROLL -> generateDrumRoll(sampleRate)
             SoundType.POLICE_SIREN -> generatePoliceSiren(sampleRate)
+            SoundType.CUSTOM -> ShortArray(0)
         }
         writeWav(file, samples, sampleRate)
     }

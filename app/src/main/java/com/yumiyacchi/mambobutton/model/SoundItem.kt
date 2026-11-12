@@ -22,16 +22,20 @@ enum class SoundType {
     WRONG_BUZZER,
     VICTORY,
     DRUM_ROLL,
-    POLICE_SIREN
+    POLICE_SIREN,
+    CUSTOM
 }
 
 data class SoundItem(
     val id: String,
     val title: String,
-    val emoji: String,
-    val category: String,
-    val type: SoundType,
-    val color: Color
+    val emoji: String = "🎵",
+    val category: String = "Custom",
+    val type: SoundType = SoundType.CUSTOM,
+    val color: Color,
+    val soundFilePath: String? = null,
+    val imageFilePath: String? = null,
+    val isCustom: Boolean = false
 )
 
 object SoundCatalog {
@@ -46,5 +50,18 @@ object SoundCatalog {
         SoundItem("victory", "Ta-Dah!", "🎉", "Reactions", SoundType.VICTORY, SoundTeal),
         SoundItem("drum", "Drum Roll", "🥁", "Reactions", SoundType.DRUM_ROLL, SoundIndigo),
         SoundItem("siren", "Wee-Woo", "🚨", "Alerts", SoundType.POLICE_SIREN, SoundLime)
+    )
+
+    val presetColors = listOf(
+        SoundCoral,
+        SoundMint,
+        SoundPurple,
+        SoundSun,
+        SoundSky,
+        SoundRose,
+        SoundOrange,
+        SoundTeal,
+        SoundIndigo,
+        SoundLime
     )
 }

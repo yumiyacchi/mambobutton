@@ -1,44 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.yumiyacchi.mambobutton.app-mergeDebugResources-47:/values-my/values-my.xml",
+            "outputFile": "com.yumiyacchi.mambobutton.app-mergeDebugResources-49:/values-my/values-my.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\gabri\\.gradle\\caches\\8.13\\transforms\\cbc9b224b4ee8967f24210242f04f1a7\\transformed\\foundation-release\\res\\values-my\\values-my.xml",
-                    "from": {
-                        "startLines": "2,3",
-                        "startColumns": "4,4",
-                        "startOffsets": "55,164",
-                        "endColumns": "108,107",
-                        "endOffsets": "159,267"
-                    },
-                    "to": {
-                        "startLines": "85,86",
-                        "startColumns": "4,4",
-                        "startOffsets": "8898,9007",
-                        "endColumns": "108,107",
-                        "endOffsets": "9002,9110"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\gabri\\.gradle\\caches\\8.13\\transforms\\6e13656faa373ba0e6fc42fce25eaa79\\transformed\\core-1.15.0\\res\\values-my\\values-my.xml",
-                    "from": {
-                        "startLines": "2,3,4,5,6,7,8,9",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "55,158,262,365,467,572,678,797",
-                        "endColumns": "102,103,102,101,104,105,118,100",
-                        "endOffsets": "153,257,360,462,567,673,792,893"
-                    },
-                    "to": {
-                        "startLines": "2,3,4,5,6,7,8,81",
-                        "startColumns": "4,4,4,4,4,4,4,4",
-                        "startOffsets": "105,208,312,415,517,622,728,8524",
-                        "endColumns": "102,103,102,101,104,105,118,100",
-                        "endOffsets": "203,307,410,512,617,723,842,8620"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\gabri\\.gradle\\caches\\8.13\\transforms\\e777864f78b919d1e3e06537b68a16c2\\transformed\\material3-release\\res\\values-my\\values-my.xml",
+                    "source": "C:\\Users\\gabri\\.gradle\\caches\\9.6.0\\transforms\\02e013ca2f57528c8483e5692b2bfc2d\\transformed\\material3-release\\res\\values-my\\values-my.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -55,7 +21,24 @@
                     }
                 },
                 {
-                    "source": "C:\\Users\\gabri\\.gradle\\caches\\8.13\\transforms\\b28ac458e7da94b224acf09e20fd4b49\\transformed\\ui-release\\res\\values-my\\values-my.xml",
+                    "source": "C:\\Users\\gabri\\.gradle\\caches\\9.6.0\\transforms\\6a1be265873acf607014a75b7e428e68\\transformed\\core-1.15.0\\res\\values-my\\values-my.xml",
+                    "from": {
+                        "startLines": "2,3,4,5,6,7,8,9",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "55,158,262,365,467,572,678,797",
+                        "endColumns": "102,103,102,101,104,105,118,100",
+                        "endOffsets": "153,257,360,462,567,673,792,893"
+                    },
+                    "to": {
+                        "startLines": "2,3,4,5,6,7,8,81",
+                        "startColumns": "4,4,4,4,4,4,4,4",
+                        "startOffsets": "105,208,312,415,517,622,728,8524",
+                        "endColumns": "102,103,102,101,104,105,118,100",
+                        "endOffsets": "203,307,410,512,617,723,842,8620"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\gabri\\.gradle\\caches\\9.6.0\\transforms\\0d60da5ec53a42d099d346e16de107b5\\transformed\\ui-release\\res\\values-my\\values-my.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -69,6 +52,23 @@
                         "startOffsets": "847,941,1029,1133,1237,1320,1404,7882,7971,8053,8140,8226,8301,8378,8451,8625,8706,8772",
                         "endColumns": "93,87,103,103,82,83,98,88,81,86,85,74,76,72,72,80,65,125",
                         "endOffsets": "936,1024,1128,1232,1315,1399,1498,7966,8048,8135,8221,8296,8373,8446,8519,8701,8767,8893"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\gabri\\.gradle\\caches\\9.6.0\\transforms\\afebece1dfcc973f93185694e68c817c\\transformed\\foundation-release\\res\\values-my\\values-my.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,164",
+                        "endColumns": "108,107",
+                        "endOffsets": "159,267"
+                    },
+                    "to": {
+                        "startLines": "85,86",
+                        "startColumns": "4,4",
+                        "startOffsets": "8898,9007",
+                        "endColumns": "108,107",
+                        "endOffsets": "9002,9110"
                     }
                 }
             ]

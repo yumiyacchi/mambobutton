@@ -1,11 +1,11 @@
 package com.yumiyacchi.mambobutton.ui
 
 import android.view.HapticFeedbackConstants
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -30,13 +30,16 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,6 +48,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -61,6 +65,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -68,29 +73,44 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.yumiyacchi.mambobutton.audio.SoundManager
+import com.yumiyacchi.mambobutton.model.CustomSoundRepository
 import com.yumiyacchi.mambobutton.model.SoundCatalog
 import com.yumiyacchi.mambobutton.model.SoundItem
 import com.yumiyacchi.mambobutton.model.SoundType
 import com.yumiyacchi.mambobutton.ui.theme.MamboButtonTheme
+import java.io.File
 import kotlin.math.roundToInt
 
 @Composable
 fun SoundpadScreen(
     soundManager: SoundManager,
+    customSoundRepository: CustomSoundRepository,
+    onCreateNewClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val currentlyPlaying by soundManager.currentlyPlaying.collectAsState()
+    val currentlyPlayingId by soundManager.currentlyPlayingId.collectAsState()
+    val customSounds by customSoundRepository.customSounds.collectAsState()
+
+    val allSounds = remember(customSounds) {
+        SoundCatalog.defaultSounds + customSounds
+    }
 
     SoundpadContent(
-        sounds = SoundCatalog.defaultSounds,
-        currentlyPlaying = currentlyPlaying,
+        sounds = allSounds,
+        currentlyPlayingId = currentlyPlayingId,
         onPlaySound = { sound, pitch ->
-            soundManager.play(sound.type, pitch)
+            soundManager.play(sound, pitch)
         },
         onStopAll = {
             soundManager.stopAll()
         },
+        onDeleteSound = { sound ->
+            customSoundRepository.deleteCustomSound(sound.id)
+            soundManager.unloadCustomSound(sound.id)
+        },
+        onCreateNewClick = onCreateNewClick,
         modifier = modifier
     )
 }
@@ -99,13 +119,16 @@ fun SoundpadScreen(
 @Composable
 fun SoundpadContent(
     sounds: List<SoundItem>,
-    currentlyPlaying: SoundType?,
+    currentlyPlayingId: String?,
     onPlaySound: (SoundItem, Float) -> Unit,
     onStopAll: () -> Unit,
+    onDeleteSound: (SoundItem) -> Unit = {},
+    onCreateNewClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var selectedCategory by remember { mutableStateOf("All") }
     var pitchModifier by remember { mutableFloatStateOf(1.0f) }
+    var soundToDelete by remember { mutableStateOf<SoundItem?>(null) }
     val view = LocalView.current
 
     val categories = remember(sounds) {
@@ -151,16 +174,16 @@ fun SoundpadContent(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
+            ExtendedFloatingActionButton(
                 onClick = {
-                    view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
-                    onStopAll()
+                    view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                    onCreateNewClick()
                 },
-                containerColor = MaterialTheme.colorScheme.errorContainer,
-                contentColor = MaterialTheme.colorScheme.onErrorContainer
-            ) {
-                Icon(Icons.Default.Stop, contentDescription = "Emergency Stop")
-            }
+                icon = { Icon(Icons.Default.Add, contentDescription = null) },
+                text = { Text("New Button", fontWeight = FontWeight.Bold) },
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            )
         }
     ) { paddingValues ->
         Column(
@@ -211,15 +234,45 @@ fun SoundpadContent(
                 items(filteredSounds, key = { it.id }) { sound ->
                     SoundButtonCard(
                         sound = sound,
-                        isPlaying = currentlyPlaying == sound.type,
+                        isPlaying = currentlyPlayingId == sound.id || currentlyPlayingId == sound.type.name,
                         onClick = {
                             view.performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP)
                             onPlaySound(sound, pitchModifier)
+                        },
+                        onLongClick = {
+                            if (sound.isCustom) {
+                                view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+                                soundToDelete = sound
+                            }
                         }
                     )
                 }
             }
         }
+    }
+
+    // Delete Confirmation Dialog
+    soundToDelete?.let { sound ->
+        AlertDialog(
+            onDismissRequest = { soundToDelete = null },
+            title = { Text("Delete Sound Button?") },
+            text = { Text("Are you sure you want to delete \"${sound.title}\"?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onDeleteSound(sound)
+                        soundToDelete = null
+                    }
+                ) {
+                    Text("Delete", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { soundToDelete = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 
@@ -276,11 +329,13 @@ fun PitchControlCard(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SoundButtonCard(
     sound: SoundItem,
     isPlaying: Boolean,
     onClick: () -> Unit,
+    onLongClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val interactionSource = remember { MutableInteractionSource() }
@@ -292,6 +347,10 @@ fun SoundButtonCard(
         label = "scale"
     )
 
+    val imageFile = remember(sound.imageFilePath) {
+        sound.imageFilePath?.let { File(it) }?.takeIf { it.exists() }
+    }
+
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -301,10 +360,11 @@ fun SoundButtonCard(
                 elevation = if (isPressed) 2.dp else 6.dp,
                 shape = RoundedCornerShape(22.dp)
             )
-            .clickable(
+            .combinedClickable(
                 interactionSource = interactionSource,
                 indication = null,
-                onClick = onClick
+                onClick = onClick,
+                onLongClick = onLongClick
             ),
         shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
@@ -327,11 +387,32 @@ fun SoundButtonCard(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Text(
-                    text = sound.emoji,
-                    fontSize = 44.sp,
-                    textAlign = TextAlign.Center
-                )
+                if (imageFile != null) {
+                    AsyncImage(
+                        model = imageFile,
+                        contentDescription = sound.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                    )
+                } else if (sound.imageFilePath != null && sound.imageFilePath.startsWith("content://")) {
+                    AsyncImage(
+                        model = sound.imageFilePath,
+                        contentDescription = sound.title,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                    )
+                } else {
+                    Text(
+                        text = sound.emoji,
+                        fontSize = 44.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
                     text = sound.title,
@@ -349,6 +430,24 @@ fun SoundButtonCard(
                     fontWeight = FontWeight.Medium
                 )
             }
+
+            if (sound.isCustom) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .size(24.dp)
+                        .background(Color.Black.copy(alpha = 0.3f), CircleShape)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete",
+                        tint = Color.White.copy(alpha = 0.85f),
+                        modifier = Modifier
+                            .size(14.dp)
+                            .align(Alignment.Center)
+                    )
+                }
+            }
         }
     }
 }
@@ -359,7 +458,7 @@ fun SoundpadPreview() {
     MamboButtonTheme {
         SoundpadContent(
             sounds = SoundCatalog.defaultSounds,
-            currentlyPlaying = SoundType.AIRHORN,
+            currentlyPlayingId = "airhorn",
             onPlaySound = { _, _ -> },
             onStopAll = {}
         )
@@ -379,4 +478,3 @@ fun SoundButtonPreview() {
         }
     }
 }
-

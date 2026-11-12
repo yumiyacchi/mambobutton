@@ -1,0 +1,9 @@
+com.yumiyacchi.mambobutton.app-pngs-0 C:\Users\gabri\Escritorio\KOTLIN\MamboButton\app\build\generated\res\pngs\debug
+com.yumiyacchi.mambobutton.app-resValues-1 C:\Users\gabri\Escritorio\KOTLIN\MamboButton\app\build\generated\res\resValues\debug
+com.yumiyacchi.mambobutton.app-updated_navigation_xml-2 C:\Users\gabri\Escritorio\KOTLIN\MamboButton\app\build\generated\updated_navigation_xml\debug
+com.yumiyacchi.mambobutton.app-packageDebugResources-3 C:\Users\gabri\Escritorio\KOTLIN\MamboButton\app\build\intermediates\incremental\debug\packageDebugResources\merged.dir
+com.yumiyacchi.mambobutton.app-packageDebugResources-4 C:\Users\gabri\Escritorio\KOTLIN\MamboButton\app\build\intermediates\incremental\debug\packageDebugResources\stripped.dir
+com.yumiyacchi.mambobutton.app-debug-5 C:\Users\gabri\Escritorio\KOTLIN\MamboButton\app\build\intermediates\merged_res\debug\mergeDebugResources
+com.yumiyacchi.mambobutton.app-debug-6 C:\Users\gabri\Escritorio\KOTLIN\MamboButton\app\src\debug\res
+com.yumiyacchi.mambobutton.app-main-7 C:\Users\gabri\Escritorio\KOTLIN\MamboButton\app\src\main\res
+gradleHome-0 C:\Users\gabri\.gradle
